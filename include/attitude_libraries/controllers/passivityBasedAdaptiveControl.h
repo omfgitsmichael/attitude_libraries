@@ -2,7 +2,7 @@
 #define PASSIVITY_BASED_ADAPTIVE_CONTROL_H_
 
 #include "attitude_libraries/quaternions/quaternionMath.h"
-#include "attitudde_libraries/types/controllerTypes.h"
+#include "attitude_libraries/types/controllerTypes.h"
 
 namespace attitude {
 
