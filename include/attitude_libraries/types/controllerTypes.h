@@ -27,8 +27,6 @@ struct PassivityParams
     ProjectionParams<Scalar, 1> projectionParams;                               /// Projection parameters
 };
 
-} // namespace control
-
 /**
  * Passivity-based adpative control data type structure
 **/
@@ -46,6 +44,8 @@ struct PassivityControlData
     control::Theta<Scalar> theta = control::Theta<Scalar>::Zero();
     Control<Scalar> u = Control<Scalar>::Zero();
 };
+
+} // namespace control
 
 } // namespace attitude
 
