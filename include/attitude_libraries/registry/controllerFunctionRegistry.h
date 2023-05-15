@@ -7,7 +7,7 @@
 #include <unordered_map>
 
 // Controller Includes
-#include "controllers/passivityBasedAdaptiveControl.h"
+#include "attitude_libraries/controllers/passivityBasedAdaptiveControl.h"
 
 namespace registry {
 

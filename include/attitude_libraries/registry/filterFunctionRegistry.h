@@ -7,8 +7,8 @@
 #include <unordered_map>
 
 // Filter Includes
-#include "filters/AHRSKalmanFilter.h"
-#include "filters/multiplicativeExtendedKalmanFilter.h"
+#include "attitude_libraries/filters/AHRSKalmanFilter.h"
+#include "attitude_libraries/filters/multiplicativeExtendedKalmanFilter.h"
 
 namespace registry {
 
