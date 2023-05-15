@@ -44,9 +44,8 @@ namespace mekf {
  * Kalman Filter propagation parameters
 **/
 template <typename Scalar>
-struct MEKFParams
+struct MEKFParams : BaseParams<Scalar>
 {
-    Scalar dt = 0.0;
     Scalar omegaProcessNoise = 0.0; /// Angular rate process noise standard deviation
     Scalar biasProcessNoise = 0.0;  /// Angular rate bias process noise standard deviation
 };
@@ -55,14 +54,13 @@ struct MEKFParams
  * Attitude estimation Kalman Filter data type structure
 **/
 template <typename Scalar>
-struct MEKFData
+struct MEKFData : BaseData<Scalar>
 {
     // Measurements
     std::vector<AttitudeMeasurement<Scalar>> attitudeMeasurements; /// Size is the number of incoming measurement vectors
     BodyRate<Scalar> omegaMeas = BodyRate<Scalar>::Zero();
 
     // Kalman Filter estimated states
-    Quaternion<Scalar> quaternion = Quaternion<Scalar>::Zero();
     BodyRate<Scalar> omega = BodyRate<Scalar>::Zero();
     BodyRate<Scalar> omegaBias = BodyRate<Scalar>::Zero();
     DeltaStates<Scalar, 6> deltaX = DeltaStates<Scalar, 6>::Zero();
@@ -79,9 +77,8 @@ namespace ahrs {
  * Kalman Filter propagation parameters
 **/
 template <typename Scalar>
-struct AHRSParams
+struct AHRSParams : BaseParams<Scalar>
 {
-    Scalar dt = 0.0;
     Scalar omegaProcessNoise = 0.0;   /// Angular rate process noise standard deviation
     Scalar biasProcessNoise = 0.0;    /// Angular rate bias process noise standard deviation
     Scalar linearAccelNoise = 0.0;    /// Linear acceleration force process noise standard deviation
@@ -96,7 +93,7 @@ struct AHRSParams
  * Attitude estimation Kalman Filter data type structure.
 **/
 template <typename Scalar>
-struct AHRSData
+struct AHRSData : BaseData<Scalar>
 {
     // Measurements
     AttitudeMeasurement<Scalar> accelerometerMeas;
@@ -104,7 +101,6 @@ struct AHRSData
     BodyRate<Scalar> omegaMeas = BodyRate<Scalar>::Zero();
 
     // Kalman Filter estimated states
-    Quaternion<Scalar> quaternion = Quaternion<Scalar>::Zero();
     BodyRate<Scalar> omega = BodyRate<Scalar>::Zero();
     BodyRate<Scalar> omegaBias = BodyRate<Scalar>::Zero();
     AttitudeVector<Scalar> linearAccelForces = AttitudeVector<Scalar>::Zero();

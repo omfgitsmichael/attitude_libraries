@@ -37,7 +37,7 @@ inline bool AHRSKalmanInitialize(AHRSData<Scalar>& data)
     }
 
     data.omega = data.omegaMeas;
-    data.quaternion = *quat;
+    data.quat = *quat;
     data.magneticVector = rotation.transpose() * data.magnetometerMeas.attitudeMeasVector;
     return true;
 }
@@ -97,7 +97,7 @@ inline void AHRSKalmanPropagate(const AHRSParams<Scalar>& params, AHRSData<Scala
     process.block(6, 6, 3, 3) = static_cast<Scalar>(0.25) * data.P.block(6, 6, 3, 3) + QLinearAccelProcess;
     process.block(9, 9, 3, 3) = static_cast<Scalar>(0.25) * data.P.block(9, 9, 3, 3) + QMagneticDisturbanceProcess;
 
-    data.quaternion = omega * data.quaternion;
+    data.quat = omega * data.quat;
     data.P = process;
 }
 
@@ -196,7 +196,7 @@ inline bool magnetometerUpdate(const AHRSParams<Scalar>& params,
 template <typename Scalar>
 inline bool AHRSKalmanUpdate(const AHRSParams<Scalar>& params, AHRSData<Scalar>& data)
 {
-    const OptionalRotationMatrix<Scalar> rotation = quaternionRotationMatrix(data.quaternion);
+    const OptionalRotationMatrix<Scalar> rotation = quaternionRotationMatrix(data.quat);
     if (!rotation){
         return false;
     }
@@ -218,12 +218,12 @@ inline bool AHRSKalmanUpdate(const AHRSParams<Scalar>& params, AHRSData<Scalar>&
     data.magneticDisturbances += data.deltaX.tail(3);
     data.omega = data.omegaMeas - data.omegaBias;
 
-    const Eigen::Matrix<Scalar, 4, 3> E{{data.quaternion(3), -data.quaternion(2), data.quaternion(1)},
-                                        {data.quaternion(2), data.quaternion(3), -data.quaternion(0)},
-                                        {-data.quaternion(1), data.quaternion(0), data.quaternion(3)},
-                                        {-data.quaternion(0), -data.quaternion(1), -data.quaternion(2)}};
-    data.quaternion += static_cast<Scalar>(0.5) * E * data.deltaX.head(3);
-    data.quaternion /= data.quaternion.norm();
+    const Eigen::Matrix<Scalar, 4, 3> E{{data.quat(3), -data.quat(2), data.quat(1)},
+                                        {data.quat(2), data.quat(3), -data.quat(0)},
+                                        {-data.quat(1), data.quat(0), data.quat(3)},
+                                        {-data.quat(0), -data.quat(1), -data.quat(2)}};
+    data.quat += static_cast<Scalar>(0.5) * E * data.deltaX.head(3);
+    data.quat /= data.quat.norm();
 
     // Update the magnetic vector if the magnetometer measurement was valid
     if (data.magnetometerMeas.valid) {

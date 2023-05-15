@@ -17,9 +17,8 @@ using Theta = Eigen::Vector<Scalar, 3>;
 * The passivity-based adaptive control paramters
 **/
 template <typename Scalar>
-struct PassivityParams
+struct PassivityParams : BaseParams<Scalar>
 {
-    Scalar dt = 0;
     Eigen::Matrix<Scalar, 3, 3> lambda = Eigen::Matrix<Scalar, 3, 3>::Zero();   /// Diaginal matrix
     Eigen::Matrix<Scalar, 3, 3> k = Eigen::Matrix<Scalar, 3, 3>::Zero();        /// Diaginal matrix
     Eigen::Matrix<Scalar, 3, 3> gammaInv = Eigen::Matrix<Scalar, 3, 3>::Zero(); /// Diaginal matrix
@@ -31,10 +30,9 @@ struct PassivityParams
  * Passivity-based adpative control data type structure
 **/
 template <typename Scalar>
-struct PassivityControlData
+struct PassivityControlData : BaseData<Scalar>
 {
     // State data
-    Quaternion<Scalar> quat = Quaternion<Scalar>::Zero();
     Quaternion<Scalar> quatDesired = Quaternion<Scalar>::Zero();
     BodyRate<Scalar> omega = BodyRate<Scalar>::Zero();
     BodyRate<Scalar> omegaDesired = BodyRate<Scalar>::Zero();

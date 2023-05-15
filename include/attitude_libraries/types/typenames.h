@@ -61,6 +61,24 @@ using OptionalRotationMatrix = std::optional<Eigen::Matrix<Scalar, 3, 3>>;
 template <typename Scalar>
 using Control = Eigen::Vector<Scalar, 3>;
 
+/**
+ * The base structure type for all of the param structures
+**/
+template <typename Scalar>
+struct BaseParams
+{
+    Scalar dt = 0;
+};
+
+/**
+ * The base structure type for all of the data structures
+**/
+template <typename Scalar>
+struct BaseData
+{
+    Quaternion<Scalar> quat = Quaternion<Scalar>::Zero();
+};
+
 } // namespace attitude
 
 #endif // TYPENAME_H_

@@ -80,7 +80,7 @@ inline void multiplicativeExtendedKalmanPropagate(const MEKFParams<Scalar>& para
         phi.block(3, 3, 3, 3) = identity;
     }
 
-    data.quaternion = omega * data.quaternion;
+    data.quat = omega * data.quat;
     data.P = phi * data.P * phi.transpose() + gamma * process * gamma.transpose();
 }
 
@@ -94,7 +94,7 @@ inline void multiplicativeExtendedKalmanPropagate(const MEKFParams<Scalar>& para
 template <typename Scalar>
 inline bool multiplicativeExtendedKalmanUpdate(MEKFData<Scalar>& data)
 {
-    const OptionalRotationMatrix<Scalar> rotation = quaternionRotationMatrix(data.quaternion);
+    const OptionalRotationMatrix<Scalar> rotation = quaternionRotationMatrix(data.quat);
     if (!rotation) {
         return false;
     }
@@ -130,12 +130,12 @@ inline bool multiplicativeExtendedKalmanUpdate(MEKFData<Scalar>& data)
     data.omegaBias += data.deltaX.tail(3);
     data.omega = data.omegaMeas - data.omegaBias;
 
-    const Eigen::Matrix<Scalar, 4, 3> E{{data.quaternion(3), -data.quaternion(2), data.quaternion(1)},
-                                        {data.quaternion(2), data.quaternion(3), -data.quaternion(0)},
-                                        {-data.quaternion(1), data.quaternion(0), data.quaternion(3)},
-                                        {-data.quaternion(0), -data.quaternion(1), -data.quaternion(2)}};
-    data.quaternion += static_cast<Scalar>(0.5) * E * data.deltaX.head(3);
-    data.quaternion /= data.quaternion.norm();
+    const Eigen::Matrix<Scalar, 4, 3> E{{data.quat(3), -data.quat(2), data.quat(1)},
+                                        {data.quat(2), data.quat(3), -data.quat(0)},
+                                        {-data.quat(1), data.quat(0), data.quat(3)},
+                                        {-data.quat(0), -data.quat(1), -data.quat(2)}};
+    data.quat += static_cast<Scalar>(0.5) * E * data.deltaX.head(3);
+    data.quat /= data.quat.norm();
 
     return true;
 }
