@@ -13,21 +13,21 @@
 namespace registry {
 
 template <typename Scalar>
-using func = std::function<bool(attitude::BaseParams<Scalar>&, attitude::BaseData<Scalar>&)>;
+using filterFunc = std::function<bool(attitude::BaseParams<Scalar>&, attitude::FilterData<Scalar>&)>;
 
 template <typename Scalar>
-inline std::unordered_map<std::string, func<Scalar>> filterRegistry()
+inline std::unordered_map<std::string, filterFunc<Scalar>> filterRegistry()
 {
-    std::unordered_map<std::string, func<Scalar>> registry;
+    std::unordered_map<std::string, filterFunc<Scalar>> registry;
 
     registry.insert({"AHRSKalmanFilter",
-        [](attitude::BaseParams<Scalar>& params, attitude::BaseData<Scalar>& data) {
+        [](attitude::BaseParams<Scalar>& params, attitude::FilterData<Scalar>& data) {
             return attitude::filter::ahrs::AHRSKalmanFilter(static_cast<attitude::filter::ahrs::AHRSParams<Scalar>&>(params),
                                                             static_cast<attitude::filter::ahrs::AHRSData<Scalar>&>(data));
         }});
     
     registry.insert({"multiplicativeExtendedKalmanFilter",
-        [](attitude::BaseParams<Scalar>& params, attitude::BaseData<Scalar>& data) {
+        [](attitude::BaseParams<Scalar>& params, attitude::FilterData<Scalar>& data) {
             return attitude::filter::mekf::multiplicativeExtendedKalmanFilter(static_cast<attitude::filter::mekf::MEKFParams<Scalar>&>(params),
                                                                               static_cast<attitude::filter::mekf::MEKFData<Scalar>&>(data));
         }});

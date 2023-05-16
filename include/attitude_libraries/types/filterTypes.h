@@ -54,7 +54,7 @@ struct MEKFParams : BaseParams<Scalar>
  * Attitude estimation Kalman Filter data type structure
 **/
 template <typename Scalar>
-struct MEKFData : BaseData<Scalar>
+struct MEKFData : FilterData<Scalar>
 {
     // Measurements
     std::vector<AttitudeMeasurement<Scalar>> attitudeMeasurements; /// Size is the number of incoming measurement vectors
@@ -93,7 +93,7 @@ struct AHRSParams : BaseParams<Scalar>
  * Attitude estimation Kalman Filter data type structure.
 **/
 template <typename Scalar>
-struct AHRSData : BaseData<Scalar>
+struct AHRSData : FilterData<Scalar>
 {
     // Measurements
     AttitudeMeasurement<Scalar> accelerometerMeas;

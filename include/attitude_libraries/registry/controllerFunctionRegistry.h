@@ -12,15 +12,15 @@
 namespace registry {
 
 template <typename Scalar>
-using func = std::function<bool(attitude::BaseParams<Scalar>&, attitude::BaseData<Scalar>&)>;
+using controllerFunc = std::function<bool(attitude::BaseParams<Scalar>&, attitude::ControllerData<Scalar>&)>;
 
 template <typename Scalar>
-inline std::unordered_map<std::string, func<Scalar>> controllerRegistry()
+inline std::unordered_map<std::string, controllerFunc<Scalar>> controllerRegistry()
 {
-    std::unordered_map<std::string, func<Scalar>> registry;
+    std::unordered_map<std::string, controllerFunc<Scalar>> registry;
 
     registry.insert({"passivityBasedAdaptiveControl",
-        [](attitude::BaseParams<Scalar>& params, attitude::BaseData<Scalar>& data) {
+        [](attitude::BaseParams<Scalar>& params, attitude::ControllerData<Scalar>& data) {
             return attitude::control::passivityBasedAdaptiveControl(static_cast<attitude::control::PassivityParams<Scalar>&>(params),
                                                                     static_cast<attitude::control::PassivityControlData<Scalar>&>(data));
         }});

@@ -71,12 +71,21 @@ struct BaseParams
 };
 
 /**
- * The base structure type for all of the data structures
+ * The base structure type for all of the filter data structures
 **/
 template <typename Scalar>
-struct BaseData
+struct FilterData
 {
     Quaternion<Scalar> quat = Quaternion<Scalar>::Zero();
+};
+
+/**
+ * The base structure type for all of the controller data structures
+**/
+template <typename Scalar>
+struct ControllerData
+{
+    Control<Scalar> u = Control<Scalar>::Zero();
 };
 
 } // namespace attitude

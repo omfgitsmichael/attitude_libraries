@@ -30,9 +30,10 @@ struct PassivityParams : BaseParams<Scalar>
  * Passivity-based adpative control data type structure
 **/
 template <typename Scalar>
-struct PassivityControlData : BaseData<Scalar>
+struct PassivityControlData : ControllerData<Scalar>
 {
     // State data
+    Quaternion<Scalar> quat = Quaternion<Scalar>::Zero();
     Quaternion<Scalar> quatDesired = Quaternion<Scalar>::Zero();
     BodyRate<Scalar> omega = BodyRate<Scalar>::Zero();
     BodyRate<Scalar> omegaDesired = BodyRate<Scalar>::Zero();
