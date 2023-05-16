@@ -85,6 +85,15 @@ struct FilterData
 template <typename Scalar>
 struct ControllerData
 {
+    // Controller state variables 
+    Quaternion<Scalar> quat = Quaternion<Scalar>::Zero();
+    BodyRate<Scalar> omega = BodyRate<Scalar>::Zero();
+
+    // Controller desired variables
+    Quaternion<Scalar> quatDesired = Quaternion<Scalar>::Zero();
+    BodyRate<Scalar> omegaDesired = BodyRate<Scalar>::Zero();
+    BodyRate<Scalar> omegaDotDesired = BodyRate<Scalar>::Zero();
+
     Control<Scalar> u = Control<Scalar>::Zero();
 };
 

@@ -32,16 +32,7 @@ struct PassivityParams : BaseParams<Scalar>
 template <typename Scalar>
 struct PassivityControlData : ControllerData<Scalar>
 {
-    // State data
-    Quaternion<Scalar> quat = Quaternion<Scalar>::Zero();
-    Quaternion<Scalar> quatDesired = Quaternion<Scalar>::Zero();
-    BodyRate<Scalar> omega = BodyRate<Scalar>::Zero();
-    BodyRate<Scalar> omegaDesired = BodyRate<Scalar>::Zero();
-    BodyRate<Scalar> omegaDotDesired = BodyRate<Scalar>::Zero();
-
-    // Controller data
     control::Theta<Scalar> theta = control::Theta<Scalar>::Zero();
-    Control<Scalar> u = Control<Scalar>::Zero();
 };
 
 } // namespace control
