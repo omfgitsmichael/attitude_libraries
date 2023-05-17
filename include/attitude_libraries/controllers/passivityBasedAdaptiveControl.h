@@ -79,6 +79,17 @@ inline bool passivityBasedAdaptiveControl(const PassivityParams<Scalar>& params,
     return true;
 }
 
+/**
+* Reset the passivity based adaptive control specific data.
+* Input: data - The passivity-based adaptive control data structure
+* Output:
+**/
+template <typename Scalar>
+inline void passivityBasedAdaptiveControlReset(PassivityControlData<Scalar>& data)
+{
+    data.theta = control::Theta<Scalar>::Zero();
+}
+
 } // namespace control
 
 } // namespace attitude

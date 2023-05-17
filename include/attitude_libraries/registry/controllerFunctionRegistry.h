@@ -15,6 +15,14 @@ template <typename Scalar>
 using controllerFunc = std::function<bool(attitude::BaseParams<Scalar>&, attitude::ControllerData<Scalar>&)>;
 
 template <typename Scalar>
+using controllerResetFunc = std::function<void(attitude::ControllerData<Scalar>&)>;
+
+/**
+* Create the function registry for the controllers.
+* Input:
+* Output:
+**/
+template <typename Scalar>
 inline std::unordered_map<std::string, controllerFunc<Scalar>> controllerRegistry()
 {
     std::unordered_map<std::string, controllerFunc<Scalar>> registry;
@@ -23,6 +31,24 @@ inline std::unordered_map<std::string, controllerFunc<Scalar>> controllerRegistr
         [](attitude::BaseParams<Scalar>& params, attitude::ControllerData<Scalar>& data) {
             return attitude::control::passivityBasedAdaptiveControl(static_cast<attitude::control::PassivityParams<Scalar>&>(params),
                                                                     static_cast<attitude::control::PassivityControlData<Scalar>&>(data));
+        }});
+
+    return registry;
+}
+
+/**
+* Create the function registry for the controller reset functions.
+* Input:
+* Output:
+**/
+template <typename Scalar>
+inline std::unordered_map<std::string, controllerResetFunc<Scalar>> controllerResetRegistry()
+{
+    std::unordered_map<std::string, controllerResetFunc<Scalar>> registry;
+
+    registry.insert({"passivityBasedAdaptiveControlReset",
+        [](attitude::ControllerData<Scalar>& data) {
+            return attitude::control::passivityBasedAdaptiveControlReset(static_cast<attitude::control::PassivityControlData<Scalar>&>(data));
         }});
 
     return registry;
