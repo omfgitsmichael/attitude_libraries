@@ -159,6 +159,20 @@ inline bool multiplicativeExtendedKalmanFilter(const MEKFParams<Scalar>& params,
     return result;
 }
 
+/**
+* Reset the MEKF filter specific data.
+* Input: data - The MEKF Filter data structure
+* Input: value - Gain for the covariance matrix
+* Output:
+**/
+template <typename Scalar>
+inline void multiplicativeExtendedKalmanFilterReset(MEKFData<Scalar>& data, Scalar value)
+{
+    data.deltaX = DeltaStates<Scalar, 6>::Zero();
+    data.P = Covariance<Scalar, 6>::Identity() * value;
+    data.initialize = true;
+}
+
 } // namespace mekf
 
 } // namespace filter

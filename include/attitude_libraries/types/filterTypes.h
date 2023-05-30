@@ -1,19 +1,11 @@
 #ifndef FILTER_TYPES_H_
 #define FILTER_TYPES_H_
 
-#include <vector>
-
 #include "attitude_libraries/types/typenames.h"
 
 namespace attitude {
 
 namespace filter {
-/**
- * Attitude vector typename
-**/
-template <typename Scalar>
-using AttitudeVector = Eigen::Vector<Scalar, 3>;
-
 /**
  * The delta X update typename
 **/
@@ -25,18 +17,6 @@ using DeltaStates = Eigen::Vector<Scalar, N>;
 **/
 template <typename Scalar, int N>
 using Covariance = Eigen::Matrix<Scalar, N, N>;
-
-/**
- * Kalman Filter attitude measurement structure
-**/
-template <typename Scalar>
-struct AttitudeMeasurement
-{
-    bool valid = false;
-    Scalar sigma = 0.0; /// Attitude measurement measurement noise standard deviation
-    AttitudeVector<Scalar> attitudeRefVector = AttitudeVector<Scalar>::Zero();
-    AttitudeVector<Scalar> attitudeMeasVector = AttitudeVector<Scalar>::Zero();
-};
 
 namespace mekf {
 
@@ -56,16 +36,10 @@ struct MEKFParams : BaseParams<Scalar>
 template <typename Scalar>
 struct MEKFData : FilterData<Scalar>
 {
-    // Measurements
-    std::vector<AttitudeMeasurement<Scalar>> attitudeMeasurements; /// Size is the number of incoming measurement vectors
-    BodyRate<Scalar> omegaMeas = BodyRate<Scalar>::Zero();
-
     // Kalman Filter estimated states
-    BodyRate<Scalar> omega = BodyRate<Scalar>::Zero();
-    BodyRate<Scalar> omegaBias = BodyRate<Scalar>::Zero();
     DeltaStates<Scalar, 6> deltaX = DeltaStates<Scalar, 6>::Zero();
 
-    // Covariance matrix
+    // Covariance
     Covariance<Scalar, 6> P = Covariance<Scalar, 6>::Zero();
 };
 
@@ -95,24 +69,14 @@ struct AHRSParams : BaseParams<Scalar>
 template <typename Scalar>
 struct AHRSData : FilterData<Scalar>
 {
-    // Measurements
-    AttitudeMeasurement<Scalar> accelerometerMeas;
-    AttitudeMeasurement<Scalar> magnetometerMeas;
-    BodyRate<Scalar> omegaMeas = BodyRate<Scalar>::Zero();
-
     // Kalman Filter estimated states
-    BodyRate<Scalar> omega = BodyRate<Scalar>::Zero();
-    BodyRate<Scalar> omegaBias = BodyRate<Scalar>::Zero();
     AttitudeVector<Scalar> linearAccelForces = AttitudeVector<Scalar>::Zero();
     AttitudeVector<Scalar> magneticDisturbances = AttitudeVector<Scalar>::Zero();
     AttitudeVector<Scalar> magneticVector = AttitudeVector<Scalar>::Zero();
     DeltaStates<Scalar, 12> deltaX = DeltaStates<Scalar, 12>::Zero();
 
-    // Covariance matrix
+    // Covariance
     Covariance<Scalar, 12> P = Covariance<Scalar, 12>::Zero();
-
-    // Initialization boolean
-    bool initialize = true;
 };
 
 } // namespace ahrs

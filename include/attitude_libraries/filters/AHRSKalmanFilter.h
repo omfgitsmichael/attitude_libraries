@@ -22,13 +22,25 @@ namespace ahrs {
 template <typename Scalar>
 inline bool AHRSKalmanInitialize(AHRSData<Scalar>& data)
 {
-    const Eigen::Vector<Scalar, 3> cross1 = data.accelerometerMeas.attitudeMeasVector.cross(data.magnetometerMeas.attitudeMeasVector);
-    const Eigen::Vector<Scalar, 3> cross2 = cross1.cross(data.accelerometerMeas.attitudeMeasVector);
+    AttitudeMeasurement<Scalar> accelerometerMeas;
+    AttitudeMeasurement<Scalar> magnetometerMeas;
+    for (const auto meas : data.attitudeMeasurements) {
+        if (meas.valid && meas.sensorType == AttitudeMeasurementType::ACCELEROMETER) {
+            accelerometerMeas = meas;
+        } else if (meas.valid && meas.sensorType == AttitudeMeasurementType::MAGNETOMETER) {
+            magnetometerMeas = meas;
+        } else {
+            return false;
+        }
+    }
+
+    const Eigen::Vector<Scalar, 3> cross1 = accelerometerMeas.attitudeMeasVector.cross(magnetometerMeas.attitudeMeasVector);
+    const Eigen::Vector<Scalar, 3> cross2 = cross1.cross(accelerometerMeas.attitudeMeasVector);
 
     RotationMatrix<Scalar> rotation = RotationMatrix<Scalar>::Zero();
     rotation.col(0) = cross2 / cross2.norm();
     rotation.col(1) = cross1 / cross1.norm();
-    rotation.col(2) = data.accelerometerMeas.attitudeMeasVector / data.accelerometerMeas.attitudeMeasVector.norm();
+    rotation.col(2) = accelerometerMeas.attitudeMeasVector / accelerometerMeas.attitudeMeasVector.norm();
 
     OptionalQuaternion<Scalar> quat = rotationToQuaternion(rotation);
 
@@ -38,7 +50,7 @@ inline bool AHRSKalmanInitialize(AHRSData<Scalar>& data)
 
     data.omega = data.omegaMeas;
     data.quat = *quat;
-    data.magneticVector = rotation.transpose() * data.magnetometerMeas.attitudeMeasVector;
+    data.magneticVector = rotation.transpose() * magnetometerMeas.attitudeMeasVector;
     return true;
 }
 
@@ -105,20 +117,23 @@ inline void AHRSKalmanPropagate(const AHRSParams<Scalar>& params, AHRSData<Scala
 * Update the estimated states for the attitude and heading reference systems (AHRS) extended Kalman Filter (MEKF) algorithm using
 * accelerometer measurements -- variant of MEKF. Referenced from Mathworks:
 * https://www.mathworks.com/help/fusion/ref/ahrsfilter-system-object.html#mw_a42526cc-0fa3-40b9-936e-343972701689
+* Input: measurement - Accelerometer measurement
 * Input: params - AHRS params
+* Input: rotation - Rotation matrix
 * Input: data - AHRS data structure
 * Output: Boolean if it passsed or failed
 **/
 template <typename Scalar>
-inline void  accelerometerUpdate(const AHRSParams<Scalar>& params,
-                                 const RotationMatrix<Scalar>& rotation,
-                                 AHRSData<Scalar>& data)
+inline void accelerometerUpdate(const AttitudeMeasurement<Scalar>& measurement,
+                                const AHRSParams<Scalar>& params,
+                                const RotationMatrix<Scalar>& rotation,
+                                AHRSData<Scalar>& data)
 {
     const Eigen::Matrix<Scalar, 3, 3> identity = Eigen::Matrix<Scalar, 3, 3>::Identity();
 
     // Measurement and error model
     const AttitudeVector<Scalar> estMeas = params.gravity * rotation.col(2) + data.linearAccelForces;
-    const AttitudeVector<Scalar> meas = data.accelerometerMeas.attitudeMeasVector;
+    const AttitudeVector<Scalar> meas = measurement.attitudeMeasVector;
     const AttitudeVector<Scalar> residual = meas - estMeas;
 
     // Calculate the measurement sensitivity matrix
@@ -130,7 +145,7 @@ inline void  accelerometerUpdate(const AHRSParams<Scalar>& params,
     H.block(0, 6, 3, 3) = identity;
 
     // Calculate the Kalman gain
-    const Scalar measurementNoise = data.accelerometerMeas.sigma * data.accelerometerMeas.sigma +
+    const Scalar measurementNoise = measurement.sigma * measurement.sigma +
         params.linearAccelNoise * params.linearAccelNoise + params.dt * params.dt * (params.biasProcessNoise * params.biasProcessNoise +
         params.omegaProcessNoise * params.omegaProcessNoise);
     const Eigen::Matrix<Scalar, 3, 3> R = measurementNoise * identity;
@@ -146,12 +161,15 @@ inline void  accelerometerUpdate(const AHRSParams<Scalar>& params,
 * Update the estimated states for the attitude and heading reference systems (AHRS) extended Kalman Filter (MEKF) algorithm using
 * magnetometer measurements -- variant of MEKF. Referenced from Mathworks:
 * https://www.mathworks.com/help/fusion/ref/ahrsfilter-system-object.html#mw_a42526cc-0fa3-40b9-936e-343972701689
+* Input: measurement - Magnetometer measurement
 * Input: params - AHRS params
+* Input: rotation - Rotation matrix
 * Input: data - AHRS data structure
 * Output: Boolean if it passsed or failed
 **/
 template <typename Scalar>
-inline bool magnetometerUpdate(const AHRSParams<Scalar>& params,
+inline bool magnetometerUpdate(const AttitudeMeasurement<Scalar>& measurement,
+                               const AHRSParams<Scalar>& params,
                                const RotationMatrix<Scalar>& rotation,
                                AHRSData<Scalar>& data)
 {
@@ -159,7 +177,7 @@ inline bool magnetometerUpdate(const AHRSParams<Scalar>& params,
 
     // Measurement and error model
     const AttitudeVector<Scalar> estMeas = rotation * data.magneticVector - data.magneticDisturbances;
-    const AttitudeVector<Scalar> meas = data.magnetometerMeas.attitudeMeasVector;
+    const AttitudeVector<Scalar> meas = measurement.attitudeMeasVector;
     const AttitudeVector<Scalar> residual = meas - estMeas;
 
     // Calculate the measurement sensitivity matrix
@@ -171,7 +189,7 @@ inline bool magnetometerUpdate(const AHRSParams<Scalar>& params,
     H.block(0, 9, 3, 3) = -identity;
 
     // Calculate the Kalman gain
-    const Scalar measurementNoise = data.magnetometerMeas.sigma * data.magnetometerMeas.sigma +
+    const Scalar measurementNoise = measurement.sigma * measurement.sigma +
         params.magDisturbanceNoise * params.magDisturbanceNoise + params.dt * params.dt * (params.biasProcessNoise * params.biasProcessNoise +
         params.omegaProcessNoise * params.omegaProcessNoise);
     const Eigen::Matrix<Scalar, 3, 3> R = measurementNoise * identity;
@@ -203,13 +221,16 @@ inline bool AHRSKalmanUpdate(const AHRSParams<Scalar>& params, AHRSData<Scalar>&
 
     data.deltaX = DeltaStates<Scalar, 12>::Zero();
 
-    // Update the states
-    if (data.accelerometerMeas.valid) {
-        accelerometerUpdate(params, *rotation, data);
-    }
+    // Update the internal states
+    bool magnetometerValid = false;
+    for (const auto meas : data.attitudeMeasurements) {
+        if (meas.valid && meas.sensorType == AttitudeMeasurementType::ACCELEROMETER) {
+            accelerometerUpdate(meas, params, *rotation, data);
+        } else if (meas.valid && meas.sensorType == AttitudeMeasurementType::MAGNETOMETER) {
+            magnetometerUpdate(meas, params, *rotation, data);
 
-    if (data.magnetometerMeas.valid) {
-        magnetometerUpdate(params, *rotation, data);
+            magnetometerValid = true;
+        }
     }
 
     // Update the primary states
@@ -226,7 +247,7 @@ inline bool AHRSKalmanUpdate(const AHRSParams<Scalar>& params, AHRSData<Scalar>&
     data.quat /= data.quat.norm();
 
     // Update the magnetic vector if the magnetometer measurement was valid
-    if (data.magnetometerMeas.valid) {
+    if (magnetometerValid) {
         const AttitudeVector<Scalar> disturbanceNED = (*rotation).transpose() * data.magneticDisturbances;
         const AttitudeVector<Scalar> magneticNED = data.magneticVector - disturbanceNED;
         const Scalar inclination = static_cast<Scalar>(std::atan2(magneticNED(2), magneticNED(0)));
@@ -264,6 +285,23 @@ inline bool AHRSKalmanFilter(const AHRSParams<Scalar>& params, AHRSData<Scalar>&
     result = AHRSKalmanUpdate(params, data);
 
     return result;
+}
+
+/**
+* Reset the AHRS filter specific data.
+* Input: data - The AHRS Filter data structure
+* Input: value - Gain for the covariance matrix
+* Output:
+**/
+template <typename Scalar>
+inline void AHRSKalmanFilterReset(AHRSData<Scalar>& data, Scalar value)
+{
+    data.linearAccelForces = AttitudeVector<Scalar>::Zero();
+    data.magneticDisturbances = AttitudeVector<Scalar>::Zero();
+    data.magneticVector = AttitudeVector<Scalar>::Zero();
+    data.deltaX = DeltaStates<Scalar, 12>::Zero();
+    data.P = Covariance<Scalar, 12>::Identity() * value;
+    data.initialize = true;
 }
 
 } // namespace ahrs
